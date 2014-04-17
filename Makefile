@@ -1,6 +1,8 @@
 LIBSOURCE = src/lib/instrument.c
 CFLAGS = -finstrument-functions
+OFLAGS = 
 GCC    = gcc
+OSOURCE = main.ml
 
 all: sample
 
@@ -12,6 +14,14 @@ instrument.o:
 
 libprofile.a: instrument.o
 	ar rvs libprofile.a instrument.o
+	
+main: 
+	cd src/profiler
+	corebuild $(OSOURCE) main.native
+	
+clean:
+	rm -rf _build *.native
+
 
 clean:
-	rm -rf *.o; rm -rf *.a; rm -f sample
+	rm -rf *.o; rm -rf *.a; rm -f sample; *.native
