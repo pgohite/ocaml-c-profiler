@@ -2,10 +2,9 @@
  *------------------------------------------------------------------
  * instrument.c -- Application Instrument Library 
  *
- * April 2013, Pravin Gohite 
+ * April 2014, Pravin Gohite 
  *------------------------------------------------------------------
  */
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -128,8 +127,8 @@ main_destructor (void)
  * An entry in profile data file will be made with following information:
  *
  * E<Entry Marker>:<function-address>:<callsite>:<process-id>:<thread-id>:
- * <timestamp-sec>:<timestamp-nano-second>:<voluntary-context-switch>:
- * <involuntary-context-switch>
+ * <timestamp-sec>:<timestamp-nano-second>:<rutime-sec>:<rutime-usec>:
+ * <voluntary-context-switch>:<involuntary-context-switch>
  */
 void __cyg_profile_func_enter (void *this, void *callsite)
 {
@@ -184,8 +183,8 @@ void __cyg_profile_func_enter (void *this, void *callsite)
  * An entry in profile data file will be made with following information:
  *
  * X<Exit Marker>:<function-address>:<callsite>:<process-id>:<thread-id>:
- * <timestamp-sec>:<timestamp-nano-second>:<voluntary-context-switch>:
- * <involuntary-context-switch>
+ * <timestamp-sec>:<timestamp-nano-second>:<rutime-sec>:<rutime-usec>:
+ * <voluntary-context-switch>: <involuntary-context-switch>
  */
 void __cyg_profile_func_exit(void *this, void *callsite)
 {
