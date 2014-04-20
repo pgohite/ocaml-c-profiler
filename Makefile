@@ -25,3 +25,5 @@ clean:
 
 clean:
 	rm -rf *.o; rm -rf *.a; rm -f sample; *.native
+	
+#ocamlc str.cma parser.ml main.ml 
