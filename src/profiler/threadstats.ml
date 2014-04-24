@@ -1,4 +1,8 @@
-type thread_record =
+open Generator
+
+module ThreadStats = 
+struct
+	type elt =
 	{
 		tid          : int
 		pid          : int
@@ -8,4 +12,8 @@ type thread_record =
 		profiledtime : int
 		cputime      : float
 	}
+	
+	type t = list thread_record
+end
+
 		

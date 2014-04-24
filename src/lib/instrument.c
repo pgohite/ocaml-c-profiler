@@ -40,6 +40,7 @@ static int write_dll_offset(struct dl_phdr_info *info, size_t size, void *data)
  */
 static FILE *fp = NULL;
 
+#if 0
 /*
  * write_dll_header
  *
@@ -57,6 +58,7 @@ write_dll_offset (struct dl_phdr_info *info, size_t size, void *data)
 
     return 0;
 }
+#endif
 
 /*
  * main_constructor
@@ -87,7 +89,7 @@ main_constructor (void)
 	    fprintf(stderr, "Failed to open profiler data file!!\n");
 	}
 
-	dl_iterate_phdr(write_dll_offset, fp);
+	/* dl_iterate_phdr(write_dll_offset, fp); */
     }
 }
 
