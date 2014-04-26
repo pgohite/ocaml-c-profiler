@@ -3,7 +3,7 @@ CFLAGS = -finstrument-functions
 OFLAGS =  
 GCC    = gcc
 ODEP    = str.cma unix.cma
-OSOURCE = adt.ml symresolver.ml parser.ml main.ml
+OSOURCE = util.ml adt.ml symresolver.ml parser.ml callstats.ml main.ml
 
 all: sample main
 
