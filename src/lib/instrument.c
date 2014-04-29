@@ -40,6 +40,18 @@ static int write_dll_offset(struct dl_phdr_info *info, size_t size, void *data)
  */
 static FILE *fp = NULL;
 
+/*
+ * To increase performance of file write operation we need to
+ * write call entries into a local buffer first. Once buffer
+ * is full, we will transfer it to file.
+ */
+static char buffer[4096];
+
+/*
+ * Index to track buffer usage above
+ */
+static int  length = 0;
+
 #if 0
 /*
  * write_dll_header
@@ -105,6 +117,10 @@ void
 main_destructor (void)
 {
     if (fp != NULL) {
+        if (length > 0) {
+          fprintf(fp, "%s", buffer);
+        }
+
 	fclose(fp);
 	fp = NULL;
     }
@@ -151,7 +167,12 @@ void __cyg_profile_func_enter (void *this, void *callsite)
 	   ustart = usage.ru_utime;
 	}
 
-	fprintf(fp, "E:%p:%p:%u:%lu:%ld:%ld:%ld:%ld:%ld:%ld\n",
+        if (length > 4000) {
+           fprintf(fp, "%s", buffer);
+           length = 0;
+        }
+
+	length += sprintf((buffer + length), "E:%p:%p:%u:%lu:%ld:%ld:%ld:%ld:%ld:%ld\n",
 		(int *)this,
 		(int *)callsite,
 		getpid(),
@@ -207,7 +228,12 @@ void __cyg_profile_func_exit(void *this, void *callsite)
 	   ustop = usage.ru_utime;
 	}
 
-	fprintf(fp, "X:%p:%p:%u:%lu:%ld:%ld:%ld:%ld:%ld:%ld\n",
+        if (length > 4000) {
+           fprintf(fp, "%s", buffer);
+           length = 0;
+        }
+
+	length += sprintf((buffer + length), "X:%p:%p:%u:%lu:%ld:%ld:%ld:%ld:%ld:%ld\n",
 		(int *)this,
 		(int *)callsite,
 		getpid(),

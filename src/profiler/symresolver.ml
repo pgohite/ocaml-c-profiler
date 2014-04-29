@@ -1,6 +1,4 @@
-open Adt
-  
-module SymResolver =
+  module SymResolver =
   struct
     exception InvalidSymbol
       
@@ -31,4 +29,3 @@ module SymResolver =
       try Hashtbl.find tbl sym with | Not_found -> string_of_int sym
       
   end
-  
