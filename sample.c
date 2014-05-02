@@ -1,4 +1,9 @@
+#include <unistd.h>
+#include <sys/types.h>
+#include <errno.h>
 #include <stdio.h>
+#include <sys/wait.h>
+#include <stdlib.h>
 
 void functionC (void)
 {
@@ -15,6 +20,7 @@ void functionA (void)
 {
     printf("%s\n",__FUNCTION__);
     functionB();
+    sleep(1);
     functionC();
 }
 
@@ -37,6 +43,18 @@ int main (void)
     functionB();
     functionC();
     functionR(3);
+
+    pid_t pids[5];
+
+    for (i = 0; i < 5 ; i++) {
+    	pids[i] = fork();
+    	if (pids[i] >= 0) {
+    		if (pids[i] == 0) {
+    			functionA();
+    	    	exit(0);
+    		}
+    	}
+    }
     printf("%s\n",__FUNCTION__);
     return 0;
 }

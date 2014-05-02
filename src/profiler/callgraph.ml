@@ -7,19 +7,18 @@ open Util
 module CallGraph =
   struct
     type elt =
-      { 
-				key : string; sibling : t; child : t; state : bool; time : int64
+      { key : string; sibling : t; child : t; state : bool; time : int64
       }
 
       and t =
       | Leaf | Node of elt
     
     let empty = Leaf
-		
+      
     let insert (ctree : t) (key : string) (time : int64) (entry : bool) =
       let rec __insert (graph : t) =
         match graph with
-        | Leaf -> 			Printf.printf "Adding to Leaf\n";
+        | Leaf ->
             Node
               {
                 key = key;
@@ -28,9 +27,7 @@ module CallGraph =
                 state = true;
                 time = 0L;
               }
-							
         | Node e ->
-					  Printf.printf "Adding to Node\n";
             if e.key = key
             then Node { (e) with state = false; time = time; }
             else

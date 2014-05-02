@@ -4,6 +4,7 @@ open Parser
 open Symresolver
 open Callstats
 open Callgraph
+open Callstack
   
 let filename = "/home/prgohite/ocaml-c-profiler/profile.data"
 let appname = "/home/prgohite/ocaml-c-profiler/sample"
@@ -18,4 +19,5 @@ let symboltbl = SymResolver.build_symbol appname
 open ParseDb
 let _ = CallStats.gen_report symboltbl parsedb.callstats;
         CallGraph.gen_report symboltbl parsedb.callgraph;
+				CallStack.gen_report parsedb.callstack;
 ()

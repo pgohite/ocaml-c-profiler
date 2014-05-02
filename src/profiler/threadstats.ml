@@ -1,5 +1,3 @@
-open Generator
-
 module ThreadStats = 
 struct
 	type elt =
@@ -14,6 +12,6 @@ struct
 	}
 	
 	type t = list thread_record
+	
+	
 end
-
-		

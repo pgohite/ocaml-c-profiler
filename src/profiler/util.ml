@@ -4,9 +4,10 @@ module Util =
   struct
     type time = { sec : int64; usec : int64 }
     
+		let new_time = { sec = 0L; usec = 0L }
 		let get_time_nsec s ns =  { sec = s ; usec = Int64.div ns 1000L }
 		let get_time_usec s us =  { sec = s ; usec = us }
-
+    
     let split = Str.split (Str.regexp_string ":")
 		
 		let string_of_time (t : time) : string =
