@@ -1,4 +1,7 @@
-  module SymResolver =
+(* OCAML C Profiler *)
+(* May 2014, Pravin Gohite (pravin.gohite@gmail.com) *)
+
+	module SymResolver =
   struct
     exception InvalidSymbol
       

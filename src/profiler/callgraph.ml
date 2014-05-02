@@ -1,7 +1,8 @@
-open Int64
-  
+(* OCAML C Profiler *)
+(* May 2014, Pravin Gohite (pravin.gohite@gmail.com) *)
+
+open Int64 
 open Symresolver
-  
 open Util
   
 module CallGraph =
@@ -15,8 +16,8 @@ module CallGraph =
     
     let empty = Leaf
       
-    let insert (ctree : t) (key : string) (time : int64) (entry : bool) =
-      let rec __insert (graph : t) =
+    let insert (ctree : t) (key : string) (time : int64) (entry : bool) (depth : int) =
+      let rec __insert (graph : t) d =
         match graph with
         | Leaf ->
             Node
@@ -32,17 +33,21 @@ module CallGraph =
             then Node { (e) with state = false; time = time; }
             else
               if e.state = true
-              then Node { (e) with child = __insert e.child; }
-              else Node { (e) with sibling = __insert e.sibling; }
-      in __insert ctree
+              then
+								if d < depth then 
+								 Node { (e) with child = __insert e.child (d + 1); }
+								else 
+								 Node e
+              else Node { (e) with sibling = __insert e.sibling d; }
+      in __insert ctree 0
       
-    let gen_report symboltbl (ctree : t) =
+    let gen_report symboltbl (ctree : t) (depth : int) =
       let _ =
         Printf.printf "%s"
           ("\n\n------------------------------------------" ^
              (" Call Graph Report " ^
                 "----------------------------------------\n")) in
-      let rec gen_callgraph indent graph =
+      let rec gen_callgraph indent graph d =
         match graph with
         | Leaf -> ()
         | Node e ->
@@ -51,9 +56,10 @@ module CallGraph =
             in
               (Printf.printf "%s|\n" indent;
                Printf.printf "%sx--> %s [%Ld uSec]\n" indent fname e.time;
-               gen_callgraph (indent ^ "|    ") e.child;
-               gen_callgraph indent e.sibling)
-      in gen_callgraph "" ctree
+							 if d < depth then 
+								gen_callgraph (indent ^ "|    ") e.child (d+1);
+               gen_callgraph indent e.sibling d)
+      in gen_callgraph "" ctree 0
       
   end
   

@@ -1,15 +1,12 @@
-open Int64
-  
-open Util
-  
-open Hashtbl
-  
-open Callstats
-  
-open Callgraph
-  
-open Callstack
+(* OCAML C Profiler *)
+(* May 2014, Pravin Gohite (pravin.gohite@gmail.com) *)
 
+open Int64
+open Util
+open Hashtbl
+open Callstats
+open Callgraph
+open Callstack
 open Threadstats
   
 module ParseDb =
@@ -35,6 +32,7 @@ module ParseDb =
       { calltable : (string, callentry_e) Hashtbl.t; callstats : CallStats.t;
         callgraph : CallGraph.t; callstack : CallStack.t; 
 				threadstats : ThreadStats.t;
+				depth : int;
 				last_tid : string
       }
     
@@ -42,13 +40,14 @@ module ParseDb =
       
     let max_callentry = 4096
       
-    let empty : t =
+    let new_db (depth : int) : t =
       {
         calltable = Hashtbl.create max_callentry;
         callstats = Hashtbl.create max_callentry;
         callgraph = CallGraph.empty;
         callstack = Hashtbl.create max_thread;
 				threadstats = Hashtbl.create max_thread;
+				depth = depth;
         last_tid = "";
       }
       
@@ -95,7 +94,7 @@ module ParseDb =
              {
                (db)
                with
-               callgraph = CallGraph.insert db.callgraph ct_key 0L true;
+               callgraph = CallGraph.insert db.callgraph ct_key 0L true db.depth;
                last_tid = r.thread_id;
              }
       | FExit -> (* We must have a calltable entry for this function *)
@@ -140,7 +139,7 @@ module ParseDb =
                    (db)
                    with
                    callgraph =
-                     CallGraph.insert db.callgraph ct_key time false;
+                     CallGraph.insert db.callgraph ct_key time false db.depth;
                    last_tid = r.thread_id;
                  })
             else

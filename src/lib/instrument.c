@@ -2,7 +2,7 @@
  *------------------------------------------------------------------
  * instrument.c -- Application Instrument Library 
  *
- * April 2014, Pravin Gohite 
+ * April 2014, Pravin Gohite (pravin.gohite@gmail.com)
  *------------------------------------------------------------------
  */
 #include <stdio.h>
@@ -32,9 +32,12 @@ void __cyg_profile_func_enter( void *, void * )
 void __cyg_profile_func_exit( void *, void * )
     __attribute__ ((no_instrument_function));
 
+/*
 static int write_dll_offset(struct dl_phdr_info *info, size_t size, void *data)
     __attribute__ ((no_instrument_function));
-    
+
+*/
+
 /*
  * File pointer to profile data file
  */

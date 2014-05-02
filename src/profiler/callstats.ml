@@ -1,3 +1,6 @@
+(* OCAML C Profiler *)
+(* May 2014, Pravin Gohite (pravin.gohite@gmail.com) *)
+
 open Int64 
 open Symresolver
   

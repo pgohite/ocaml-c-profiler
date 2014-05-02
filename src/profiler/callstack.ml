@@ -1,5 +1,7 @@
-(* This module implements callstack functionality. During parsing of profile*)
-(* data we build a temporary call stack to emulate runtime graph *)
+(* OCAML C Profiler *)
+(* May 2014, Pravin Gohite (pravin.gohite@gmail.com) *)
+
+
 open Util
   
 module CallStack =

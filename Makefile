@@ -1,3 +1,7 @@
+# OCAML-C-PROFILER makefile
+# Use make clean to clean up generated object files
+# Use make all to build project
+
 LIBSOURCE = src/lib/instrument.c
 CFLAGS    = -finstrument-functions
 OFLAGS 	  =  
@@ -12,25 +16,35 @@ OSOURCE = 	symresolver.ml \
 			parsedb.ml \
 			parser.ml \
 			main.ml
+SAMPLE  =   sample/demo.c
 
-all: sample main
+all: demo main
 
-sample: libprofile.a
-	${GCC} -o sample ${CFLAGS} sample.c libprofile.a -lrt
+#Compile Demo Code
+demo: libprofile.a libsort.a
+	${GCC} -o demo.o ${CFLAGS} ${SAMPLE} libprofile.a libsort.a -lrt
 
+sort.o:
+	${GCC} -c -Wall -O2 sample/sort.c
+    
+libsort.a : sort.o
+	ar rvs libsort.a sort.o
+
+#Compile instrumentation lib
 instrument.o: 
 	${GCC} -c -Wall -O2 ${LIBSOURCE}
-
+   	
 libprofile.a: instrument.o
 	ar rvs libprofile.a instrument.o
 	
+#Compile OCAML profiler
 main: 
 	cd src/profiler && pwd && ocamlc $(ODEP) $(OSOURCE)
 	mv src/profiler/a.out profiler.native
-	
+
+#Clean up	
 clean:
-	rm -rf *.o; rm -rf *.a;
-	rm -f sample;
+	rm -f *.o; rm -r *.a; rm -f *.out
 	rm -f *.native;
 	rm -rf src/profiler/_build;
 	rm -f src/profiler/*.o;
