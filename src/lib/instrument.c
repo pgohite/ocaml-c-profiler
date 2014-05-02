@@ -65,7 +65,7 @@ write_dll_offset (struct dl_phdr_info *info, size_t size, void *data)
     FILE *fp = data;
     
     if (fp != NULL) {
-	fprintf(fp, "L:%s:%10p\n", info->dlpi_name, (void *)info->dlpi_addr);
+    	fprintf(fp, "L:%s:%10p\n", info->dlpi_name, (void *)info->dlpi_addr);
     }
 
     return 0;

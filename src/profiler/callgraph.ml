@@ -4,19 +4,22 @@ open Symresolver
   
 open Util
   
-open Adt
-  
 module CallGraph =
   struct
-    type t = Adt.callgraph_t
+    type elt =
+      { 
+				key : string; sibling : t; child : t; state : bool; time : int64
+      }
+
+      and t =
+      | Leaf | Node of elt
     
     let empty = Leaf
-      
-    let insert (prfdb : profiledb) (key : string) (time : int64)
-               (entry : bool) =
+		
+    let insert (ctree : t) (key : string) (time : int64) (entry : bool) =
       let rec __insert (graph : t) =
         match graph with
-        | Leaf ->
+        | Leaf -> 			Printf.printf "Adding to Leaf\n";
             Node
               {
                 key = key;
@@ -25,16 +28,18 @@ module CallGraph =
                 state = true;
                 time = 0L;
               }
+							
         | Node e ->
+					  Printf.printf "Adding to Node\n";
             if e.key = key
             then Node { (e) with state = false; time = time; }
             else
               if e.state = true
               then Node { (e) with child = __insert e.child; }
               else Node { (e) with sibling = __insert e.sibling; }
-      in __insert prfdb.calltree
+      in __insert ctree
       
-    let gen_report symboltbl prfdb =
+    let gen_report symboltbl (ctree : t) =
       let _ =
         Printf.printf "%s"
           ("\n------------------------------------------" ^
@@ -51,7 +56,7 @@ module CallGraph =
                Printf.printf "%sx--> %s [%Ld uSec]\n" indent fname e.time;
                gen_callgraph (indent ^ "|    ") e.child;
                gen_callgraph indent e.sibling)
-      in gen_callgraph "" prfdb.calltree
+      in gen_callgraph "" ctree
       
   end
   

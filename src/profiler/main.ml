@@ -1,13 +1,8 @@
 open Printf
-  
-open Adt
-  
+open Parsedb
 open Parser
-  
 open Symresolver
-
 open Callstats
-
 open Callgraph
   
 let filename = "/home/prgohite/ocaml-c-profiler/profile.data"
@@ -19,7 +14,8 @@ let parsedb = Parser.parse_profile filename
 (* Build Symbol Table *) 
 let symboltbl = SymResolver.build_symbol appname
  
-
-let _ = CallStats.gen_report symboltbl parsedb.callstats
-  
-let _ = CallGraph.gen_report symboltbl parsedb
+(* Generate Reports *)
+open ParseDb
+let _ = CallStats.gen_report symboltbl parsedb.callstats;
+        CallGraph.gen_report symboltbl parsedb.callgraph;
+()
