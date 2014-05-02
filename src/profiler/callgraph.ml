@@ -39,9 +39,9 @@ module CallGraph =
     let gen_report symboltbl (ctree : t) =
       let _ =
         Printf.printf "%s"
-          ("\n------------------------------------------" ^
+          ("\n\n------------------------------------------" ^
              (" Call Graph Report " ^
-                "------------------------------------------------\n")) in
+                "----------------------------------------\n")) in
       let rec gen_callgraph indent graph =
         match graph with
         | Leaf -> ()

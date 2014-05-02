@@ -9,6 +9,8 @@ open Callstats
 open Callgraph
   
 open Callstack
+
+open Threadstats
   
 module ParseDb =
   struct
@@ -31,19 +33,22 @@ module ParseDb =
     
     type t =
       { calltable : (string, callentry_e) Hashtbl.t; callstats : CallStats.t;
-        callgraph : CallGraph.t; callstack : CallStack.t; last_tid : string
+        callgraph : CallGraph.t; callstack : CallStack.t; 
+				threadstats : ThreadStats.t;
+				last_tid : string
       }
     
     let max_thread = 16
       
     let max_callentry = 4096
       
-    let new_parsedb : t =
+    let empty : t =
       {
         calltable = Hashtbl.create max_callentry;
         callstats = Hashtbl.create max_callentry;
         callgraph = CallGraph.empty;
         callstack = Hashtbl.create max_thread;
+				threadstats = Hashtbl.create max_thread;
         last_tid = "";
       }
       
@@ -54,12 +59,15 @@ module ParseDb =
       (* creates unique entry for each call in excecution                  *)
       match r.ftype with
       | FEnter -> (* Push the function on thread stack *)
-          (* Increase thread invoke count *)
-          (CallStack.push db.callstack (int_of_string r.thread_id) r.faddress
-             (Util.get_time_nsec r.t_sec r.t_nsec);
+          (* Enteing function, push on to stack *)
+          CallStack.push db.callstack (int_of_string r.thread_id) r.faddress;   
+					(* Thread changed, update thread stats *) 
            if db.last_tid <> r.thread_id
-           then CallStack.invoked db.callstack (int_of_string r.thread_id)
-           else ();
+           then 
+						(ThreadStats.start db.threadstats r.thread_id r.proc_id
+						                  (Util.get_time_nsec r.t_sec r.t_nsec);
+						 ThreadStats.invoked db.threadstats r.thread_id);
+					
            (* Get a thread wide unique integer to create entry key *)
            let idx =
              CallStack.get_index db.callstack (int_of_string r.thread_id) in
@@ -89,11 +97,12 @@ module ParseDb =
                with
                callgraph = CallGraph.insert db.callgraph ct_key 0L true;
                last_tid = r.thread_id;
-             })
+             }
       | FExit -> (* We must have a calltable entry for this function *)
           let (fadd, idx) =
-            CallStack.pop db.callstack (int_of_string r.thread_id)
-              (Util.get_time_nsec r.t_sec r.t_nsec) in
+						ThreadStats.stop db.threadstats r.thread_id 
+						                (Util.get_time_nsec r.t_sec r.t_nsec);
+            CallStack.pop db.callstack (int_of_string r.thread_id) in
           let ct_key =
             r.faddress ^
               (":" ^ (r.thread_id ^ (r.callsite ^ (string_of_int idx))))
@@ -141,6 +150,5 @@ module ParseDb =
                  Printf.printf
                    "Error: Found callentry without enter event!!\n"
                in db)
-      
   end
   

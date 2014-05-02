@@ -51,7 +51,7 @@ struct
 	(* Parse given profile data and convert it into a parseentry list *)
 	let parse_profile (filename : string) =	
 		(* Prase database to store result of parsing *)
-		let parsedb : ParseDb.t = ParseDb.new_parsedb in
+		let parsedb : ParseDb.t = ParseDb.empty in
 	
 		(* Start parsing line by line *)
 		let ic = open_in filename in

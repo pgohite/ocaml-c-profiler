@@ -21,7 +21,7 @@ module CallStats =
     (* Printable string of a callstat entry *)
     let string_of_record symboltbl (k : string) (v : elt) : unit =
       Printf.printf
-        "%-10s : Count: [%5d], Total Time: %10Ld uSec, Average Time: %10Ld uSec\n"
+        "%-20s : Count: [%5d], Total Time: %10Ld uSec, Average Time: %10Ld uSec\n"
         (SymResolver.lookup symboltbl (int_of_string k)) v.count v.time
         (Int64.div v.time (Int64.of_int v.count))
       
@@ -29,9 +29,9 @@ module CallStats =
     let gen_report symboltbl (cstats : t) : unit =
       let _ =
         Printf.printf "%s"
-          ("\n------------------------------------------" ^
+          ("\n\n------------------------------------------" ^
              (" Call Statistic Report " ^
-                "--------------------------------------------\n")) in
+                "------------------------------------\n")) in
       let _ = Hashtbl.iter (fun k v -> string_of_record symboltbl k v) cstats
       in ()
       

@@ -1,9 +1,17 @@
 LIBSOURCE = src/lib/instrument.c
-CFLAGS = -finstrument-functions
-OFLAGS =  
-GCC    = gcc
-ODEP    = str.cma unix.cma
-OSOURCE = symresolver.ml util.ml callstats.ml callstack.ml callgraph.ml parsedb.ml   parser.ml  main.ml
+CFLAGS    = -finstrument-functions
+OFLAGS 	  =  
+GCC		= 	gcc
+ODEP    = 	str.cma unix.cma
+OSOURCE = 	symresolver.ml \
+			util.ml \
+			callstats.ml \
+			callstack.ml \
+			callgraph.ml \
+			threadstats.ml \
+			parsedb.ml \
+			parser.ml \
+			main.ml
 
 all: sample main
 
