@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include "libsort.h"
 
-#define MAX_NUMS 1000000
+#define MAX_NUMS 100000
 int data[MAX_NUMS];
 
 /***********************************************************
@@ -60,7 +60,8 @@ int functionA (void)
  * Sorting demo
  ***********************************************************/
 
-void ordered_data(void) {
+void ordered_data(void)
+{
 	int i;
 
 	for (i = 0; i < MAX_NUMS; i++) {
@@ -68,7 +69,8 @@ void ordered_data(void) {
 	}
 }
 
-void reversed_data(void) {
+void reversed_data(void)
+{
 	int i;
 
 	for (i = 0; i < MAX_NUMS; i++) {
@@ -76,7 +78,8 @@ void reversed_data(void) {
 	}
 }
 
-void random_data(void) {
+void random_data(void)
+{
 	int i;
 
 	for (i = 0; i < MAX_NUMS; i++) {
@@ -84,14 +87,15 @@ void random_data(void) {
 	}
 }
 
-void print_data(void) {
+void print_data(const char *str)
+{
 	int i;
 
-	printf("\nData : [");
+	printf("\n%s Data : [", str);
 	for (i = 0; i < 20; i++) {
 		printf("%d,", data[i]);
 	}
-	printf("]\n\n");
+	printf(" ...]\n\n");
 }
 
 void BubbleSort (void)
@@ -118,27 +122,27 @@ int main(void)
 
 	for (i = 0; i < 3; i++) {
 		random_data();
-		print_data();
-		//BubbleSort();
-		print_data();
+		print_data("Unsorted ");
+		BubbleSort();
+		print_data("Bubble sorted ");
 	}
 
 	printf("\nRunning Quick Sort\n");
 
 	for (i = 0; i < 3; i++) {
 		random_data();
-		print_data();
+		print_data("Unsorted ");
 		QuickSort();
-		print_data();
+		print_data("Quick sorted ");
 	}
 
 	printf("\nRunning Heap Sort\n");
 
 	for (i = 0; i < 3; i++) {
 		random_data();
-		print_data();
+		print_data("Unsorted ");
 		HeapSort();
-		print_data();
+		print_data("Heap sorted ");
 	}
 
 	printf("Running Recursive function\n");
@@ -156,6 +160,6 @@ int main(void)
 	functionD();
 
 	printf("\nCompleted!! Verify that 'profile.data' is generated in current directory\n");
-	printf("\nTo generate reports run - ./profiler.native -n demo.o -p ./profile.data\n");
+	printf("\nTo generate reports run - ./profiler.native -n demo.o -p ./profile.data\n\n");
 	return 0;
 }

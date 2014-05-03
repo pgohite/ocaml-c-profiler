@@ -22,7 +22,7 @@ all: demo main
 
 #Compile Demo Code
 demo: libprofile.a libsort.a
-	${GCC} -o demo.o ${CFLAGS} ${SAMPLE} libprofile.a libsort.a -lrt
+	${GCC} -g -o demo.o ${CFLAGS} ${SAMPLE} libprofile.a libsort.a -lrt
 
 sort.o:
 	${GCC} -c -Wall -O2 sample/sort.c
@@ -44,7 +44,7 @@ main:
 
 #Clean up	
 clean:
-	rm -f *.o; rm -r *.a; rm -f *.out
+	rm -f *.o; rm -f *.a; rm -f *.out
 	rm -f *.native;
 	rm -rf src/profiler/_build;
 	rm -f src/profiler/*.o;

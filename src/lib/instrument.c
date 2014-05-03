@@ -18,25 +18,26 @@
 #define PROFILE_ENABLED   "C_PROFILE_ENABLE"
 
 /*
- *  Function and attribute declaration for profiler functions
+ * Conditionally enable profiling
  */
-void main_constructor( void )
-    __attribute__ ((no_instrument_function, constructor));
-    
-void main_destructor( void )
-    __attribute__ ((no_instrument_function, destructor));
-
-void __cyg_profile_func_enter( void *, void * ) 
-    __attribute__ ((no_instrument_function));
-
-void __cyg_profile_func_exit( void *, void * )
-    __attribute__ ((no_instrument_function));
+//#define ENABLE_CONDITIONAL 1
 
 /*
-static int write_dll_offset(struct dl_phdr_info *info, size_t size, void *data)
-    __attribute__ ((no_instrument_function));
+ *  Function and attribute declaration for profiler functions
+ */
+void main_constructor(void) __attribute__ ((no_instrument_function, constructor));
 
-*/
+void main_destructor(void) __attribute__ ((no_instrument_function, destructor));
+
+void __cyg_profile_func_enter(void *, void *) __attribute__ ((no_instrument_function));
+
+void __cyg_profile_func_exit(void *, void *) __attribute__ ((no_instrument_function));
+
+/*
+ static int write_dll_offset(struct dl_phdr_info *info, size_t size, void *data)
+ __attribute__ ((no_instrument_function));
+
+ */
 
 /*
  * File pointer to profile data file
@@ -53,7 +54,7 @@ static char buffer[4096];
 /*
  * Index to track buffer usage above
  */
-static int  length = 0;
+static int length = 0;
 
 #if 0
 /*
@@ -61,17 +62,17 @@ static int  length = 0;
  *
  * A callback function to write dll offset as they are loaded by
  * application
- */ 
+ */
 static int
 write_dll_offset (struct dl_phdr_info *info, size_t size, void *data)
 {
-    FILE *fp = data;
-    
-    if (fp != NULL) {
-    	fprintf(fp, "L:%s:%10p\n", info->dlpi_name, (void *)info->dlpi_addr);
-    }
+	FILE *fp = data;
 
-    return 0;
+	if (fp != NULL) {
+		fprintf(fp, "L:%s:%10p\n", info->dlpi_name, (void *)info->dlpi_addr);
+	}
+
+	return 0;
 }
 #endif
 
@@ -82,32 +83,37 @@ write_dll_offset (struct dl_phdr_info *info, size_t size, void *data)
  * application has started. In this function we open a datafile
  * to collect profling information.
  */
-void
-main_constructor (void)
+void main_constructor(void)
 {
-    char *env_str;
-    int  enabled = 0;
+	int enabled = 0;
 
-    if (fp) {
-	return;
-    }
-
-    env_str = getenv(PROFILE_ENABLED);
-    if (env_str == NULL) {
-	return;
-    }
-
-    enabled = atoi(env_str);
-    if (enabled > 0) {
-	fp = fopen(PROFILE_FILENAME, "w" );
-	if (fp == NULL) {
-	    fprintf(stderr, "Failed to open profiler data file!!\n");
+	if (fp) {
+		return;
 	}
 
-	/* dl_iterate_phdr(write_dll_offset, fp); */
-    }
-}
+#ifdef ENABLE_CONDITIONAL
+	char *env_str;
 
+	env_str = getenv(PROFILE_ENABLED);
+	if (env_str == NULL) {
+		return;
+	}
+
+
+	enabled = atoi(env_str);
+#else
+	enabled = 1;
+#endif
+
+	if (enabled > 0) {
+		fp = fopen(PROFILE_FILENAME, "w");
+		if (fp == NULL) {
+			fprintf(stderr, "Failed to open profiler data file!!\n");
+		}
+
+		/* dl_iterate_phdr(write_dll_offset, fp); */
+	}
+}
 
 /*
  * main_destructor
@@ -116,17 +122,15 @@ main_constructor (void)
  * application has started. In this function we open a datafile
  * to collect profling information.
  */
-void
-main_destructor (void)
-{
-    if (fp != NULL) {
-        if (length > 0) {
-          fprintf(fp, "%s", buffer);
-        }
+void main_destructor(void) {
+	if (fp != NULL) {
+		if (length > 0) {
+			fprintf(fp, "%s", buffer);
+		}
 
-	fclose(fp);
-	fp = NULL;
-    }
+		fclose(fp);
+		fp = NULL;
+	}
 }
 
 /*
@@ -151,44 +155,36 @@ main_destructor (void)
  * <timestamp-sec>:<timestamp-nano-second>:<rutime-sec>:<rutime-usec>:
  * <voluntary-context-switch>:<involuntary-context-switch>
  */
-void __cyg_profile_func_enter (void *this, void *callsite)
-{
-    struct timespec start;
-    struct timeval  ustart;
-    struct rusage usage;
+void __cyg_profile_func_enter(void *this, void *callsite) {
+	struct timespec start;
+	struct timeval ustart;
+	struct rusage usage;
 
-    if (fp != NULL) {
-	if(clock_gettime(CLOCK_REALTIME, &start) == -1 ) {
-	    start.tv_nsec = 0;
-	    start.tv_sec  = 0;
+	if (fp != NULL) {
+		if (clock_gettime(CLOCK_REALTIME, &start) == -1) {
+			start.tv_nsec = 0;
+			start.tv_sec = 0;
+		}
+
+		if (getrusage(RUSAGE_SELF, &usage) == -1) {
+			ustart.tv_usec = 0;
+			ustart.tv_sec = 0;
+		} else {
+			ustart = usage.ru_utime;
+		}
+
+		if (length > 4000) {
+			fprintf(fp, "%s", buffer);
+			length = 0;
+		}
+
+		length += sprintf((buffer + length),
+				"E:%p:%p:%u:%lu:%ld:%ld:%ld:%ld:%ld:%ld\n", (int *) this,
+				(int *) callsite, getpid(), syscall(SYS_gettid), start.tv_sec,
+				start.tv_nsec, ustart.tv_sec, ustart.tv_usec, usage.ru_nvcsw,
+				usage.ru_nivcsw);
 	}
-
-	if(getrusage(RUSAGE_SELF, &usage) == -1) {
-	   ustart.tv_usec = 0;
-	   ustart.tv_sec  = 0;
-	} else {
-	   ustart = usage.ru_utime;
-	}
-
-        if (length > 4000) {
-           fprintf(fp, "%s", buffer);
-           length = 0;
-        }
-
-	length += sprintf((buffer + length), "E:%p:%p:%u:%lu:%ld:%ld:%ld:%ld:%ld:%ld\n",
-		(int *)this,
-		(int *)callsite,
-		getpid(),
-		syscall(SYS_gettid),
-		start.tv_sec,
-		start.tv_nsec,
-		ustart.tv_sec,
-		ustart.tv_usec,
-		usage.ru_nvcsw,
-		usage.ru_nivcsw);
-    }
 }
-
 
 /*
  * __cyg_profile_func_exit
@@ -212,40 +208,33 @@ void __cyg_profile_func_enter (void *this, void *callsite)
  * <timestamp-sec>:<timestamp-nano-second>:<rutime-sec>:<rutime-usec>:
  * <voluntary-context-switch>: <involuntary-context-switch>
  */
-void __cyg_profile_func_exit(void *this, void *callsite)
-{
-    struct timespec stop;
-    struct timeval ustop;
-    struct rusage usage;
+void __cyg_profile_func_exit(void *this, void *callsite) {
+	struct timespec stop;
+	struct timeval ustop;
+	struct rusage usage;
 
-    if (fp != NULL) {
-	if(clock_gettime(CLOCK_REALTIME, &stop) == -1 ) {
-	    stop.tv_nsec = 0;
-	    stop.tv_sec  = 0;
+	if (fp != NULL) {
+		if (clock_gettime(CLOCK_REALTIME, &stop) == -1) {
+			stop.tv_nsec = 0;
+			stop.tv_sec = 0;
+		}
+
+		if (getrusage(RUSAGE_SELF, &usage) == -1) {
+			ustop.tv_usec = 0;
+			ustop.tv_sec = 0;
+		} else {
+			ustop = usage.ru_utime;
+		}
+
+		if (length > 4000) {
+			fprintf(fp, "%s", buffer);
+			length = 0;
+		}
+
+		length += sprintf((buffer + length),
+				"X:%p:%p:%u:%lu:%ld:%ld:%ld:%ld:%ld:%ld\n", (int *) this,
+				(int *) callsite, getpid(), syscall(SYS_gettid), stop.tv_sec,
+				stop.tv_nsec, ustop.tv_sec, ustop.tv_usec, usage.ru_nvcsw,
+				usage.ru_nivcsw);
 	}
-
-	if(getrusage(RUSAGE_SELF, &usage) == -1 ) {
-	   ustop.tv_usec = 0;
-	   ustop.tv_sec  = 0;
-	} else {
-	   ustop = usage.ru_utime;
-	}
-
-        if (length > 4000) {
-           fprintf(fp, "%s", buffer);
-           length = 0;
-        }
-
-	length += sprintf((buffer + length), "X:%p:%p:%u:%lu:%ld:%ld:%ld:%ld:%ld:%ld\n",
-		(int *)this,
-		(int *)callsite,
-		getpid(),
-		syscall(SYS_gettid),
-		stop.tv_sec,
-		stop.tv_nsec,
-		ustop.tv_sec,
-		ustop.tv_usec,
-		usage.ru_nvcsw,
-		usage.ru_nivcsw);
-    }
 }
